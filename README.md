@@ -9,7 +9,7 @@ This project demonstrates a responsive, Auth and Membership page built with **Ne
 ## 🌐 Deployed Version
 
 You can view the live app here:  
-👉 [secondchapter-assignment.vercel.app](secondchapter-assignment.vercel.app)
+👉 [secondchapter-assignment.vercel.app](https://secondchapter-assignment.vercel.app)
 
 ---
 
