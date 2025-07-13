@@ -2,96 +2,160 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronDown, ChevronUp, Eye, EyeOff } from "lucide-react";
+import { ChevronDown, ChevronUp, Eye, EyeOff, Loader } from "lucide-react";
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { membershipSchema } from "@/lib/schema";
+import { z } from "zod";
+import { cn } from "@/lib/utils";
+import { ToastSuccess } from "./toast";
+
+type MembershipFormValues = z.infer<typeof membershipSchema>;
 
 export function MembershipForm() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-
-  const [checked, setChecked] = useState({
-    terms: false,
-    personal: false,
-    marketing: false,
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isDirty, isSubmitting },
+  } = useForm<MembershipFormValues>({
+    resolver: zodResolver(membershipSchema),
+    defaultValues: {
+      email: "",
+      phone: "",
+      password: "",
+      confirm: "",
+      terms: false,
+      personal: false,
+      marketing: false,
+    },
   });
 
-  const allChecked = checked.terms && checked.personal;
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [open, setOpen] = useState(false);
+  const sleep = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+
+  const onSubmit = async (data: MembershipFormValues) => {
+    await sleep(3000);
+    console.log("Form submitted:", data);
+    ToastSuccess({
+      message: "Membership confirmed successfully!",
+    });
+  };
+
+  const allChecked = watch("terms") && watch("personal");
 
   return (
-    <form className="space-y-5 w-full max-w-sm mx-auto bg-background">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       {/* Email */}
       <div className="space-y-1.5">
         <Label htmlFor="email">
-          email <span className="text-destructive">*</span>
+          Email <span className="text-destructive text-left">*</span>
         </Label>
         <Input
           id="email"
           type="email"
           placeholder="Please enter your email address"
           className="text-sm"
+          {...register("email")}
         />
+        {errors.email && (
+          <p className="text-xs text-destructive/70 text-left">
+            {errors.email.message}
+          </p>
+        )}
       </div>
 
       {/* Phone */}
       <div className="space-y-1.5">
         <Label htmlFor="phone">
-          phone number <span className="text-destructive">*</span>
+          Phone number <span className="text-destructive text-left">*</span>
         </Label>
         <Input
           id="phone"
           type="tel"
           placeholder="010-1234-5678"
           className="text-sm"
+          {...register("phone")}
         />
+        {errors.phone && (
+          <p className="text-xs text-destructive/70 text-left">
+            {errors.phone.message}
+          </p>
+        )}
       </div>
 
       {/* Password */}
       <div className="space-y-1.5 relative">
         <Label htmlFor="password">
-          password <span className="text-destructive">*</span>
+          Password <span className="text-destructive text-left">*</span>
         </Label>
         <Input
           id="password"
           type={showPassword ? "text" : "password"}
           placeholder="Please enter at least 8 characters"
-          className="text-sm pr-10"
+          className="pr-10 text-sm"
+          {...register("password")}
         />
         <button
           type="button"
           onClick={() => setShowPassword(!showPassword)}
-          className="absolute right-3 top-[38px] text-muted-foreground"
+          className={cn(
+            "absolute right-3 top-1/2",
+            errors.password ? "-translate-y-1/2" : "translate-y-0"
+          )}
         >
           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>
+        {errors.password && (
+          <p className="text-xs text-destructive/70 text-left">
+            {errors.password.message}
+          </p>
+        )}
       </div>
 
-      {/* Confirm Password */}
+      {/* Confirm */}
       <div className="space-y-1.5 relative">
         <Label htmlFor="confirm">
-          verify password <span className="text-destructive">*</span>
+          Verify password <span className="text-destructive text-left">*</span>
         </Label>
         <Input
           id="confirm"
           type={showConfirm ? "text" : "password"}
           placeholder="Please re-enter your password"
-          className="text-sm pr-10"
+          className="pr-10 text-sm"
+          {...register("confirm")}
         />
         <button
           type="button"
           onClick={() => setShowConfirm(!showConfirm)}
-          className="absolute right-3 top-[38px] text-muted-foreground"
+          className={cn(
+            "absolute right-3 top-1/2",
+            errors.confirm ? "-translate-y-1/2" : "translate-y-0"
+          )}
         >
           {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>
+        {errors.confirm && (
+          <p className="text-xs text-destructive/70 text-left">
+            {errors.confirm.message}
+          </p>
+        )}
       </div>
 
       {/* Agreement */}
       <div className="space-y-3 text-left">
-        <Label className="font-medium">Agree to terms and conditions</Label>
+        <Label className="font-medium">
+          Agree to terms and conditions{" "}
+          <span className="text-destructive text-left">*</span>
+        </Label>
 
-        {/* Full Agreement Row */}
+        {/* Full agreement */}
         <div
           className="flex items-center justify-between gap-2 cursor-pointer"
           onClick={() => setOpen(!open)}
@@ -99,15 +163,20 @@ export function MembershipForm() {
           <div className="flex items-center gap-2">
             <Checkbox
               checked={allChecked}
-              onCheckedChange={(value) =>
-                setChecked({
-                  terms: !!value,
-                  personal: !!value,
-                  marketing: !!value,
-                })
-              }
+              onCheckedChange={(value) => {
+                setValue("terms", !!value);
+                setValue("personal", !!value);
+                setValue("marketing", !!value);
+              }}
             />
-            <span className="text-sm">Full agreement</span>
+            <span className="text-sm flex items-center gap-2 text-foreground/80">
+              Full agreement{" "}
+              {(errors.terms || errors.personal) && (
+                <p className="text-xs text-destructive/70">
+                  {errors.terms?.message || errors.personal?.message}
+                </p>
+              )}
+            </span>
           </div>
           {open ? (
             <ChevronUp className="w-4 h-4 text-muted-foreground" />
@@ -116,7 +185,7 @@ export function MembershipForm() {
           )}
         </div>
 
-        {/* Animated Section */}
+        {/* Hidden terms */}
         <AnimatePresence initial={false}>
           {open && (
             <motion.div
@@ -128,42 +197,26 @@ export function MembershipForm() {
               className="overflow-hidden pl-4 text-sm"
             >
               <div className="space-y-2 mt-2">
-                <div className="flex items-center gap-2 text-sm text-foreground/80">
+                <div className="flex items-center gap-2">
                   <Checkbox
-                    checked={checked.terms}
-                    onCheckedChange={(value) =>
-                      setChecked((prev) => ({ ...prev, terms: !!value }))
-                    }
+                    checked={watch("terms")}
+                    onCheckedChange={(val) => setValue("terms", !!val)}
                   />
-                  <span>
-                    Agree to Terms of Service{" "}
-                    <span className="text-destructive">*</span>
-                  </span>
+                  <span>Agree to Terms of Service *</span>
                 </div>
-
-                <div className="flex items-center gap-2 text-sm text-foreground/80">
+                <div className="flex items-center gap-2">
                   <Checkbox
-                    checked={checked.personal}
-                    onCheckedChange={(value) =>
-                      setChecked((prev) => ({ ...prev, personal: !!value }))
-                    }
+                    checked={watch("personal")}
+                    onCheckedChange={(val) => setValue("personal", !!val)}
                   />
-                  <span>
-                    Consent to collection and use of personal information{" "}
-                    <span className="text-destructive">*</span>
-                  </span>
+                  <span>Consent to use of personal information *</span>
                 </div>
-
-                <div className="flex items-center gap-2 text-sm text-foreground/80">
+                <div className="flex items-center gap-2">
                   <Checkbox
-                    checked={checked.marketing}
-                    onCheckedChange={(value) =>
-                      setChecked((prev) => ({ ...prev, marketing: !!value }))
-                    }
+                    checked={watch("marketing")}
+                    onCheckedChange={(val) => setValue("marketing", !!val)}
                   />
-                  <span>
-                    Consent to receive marketing information (optional)
-                  </span>
+                  <span>Consent to marketing (optional)</span>
                 </div>
               </div>
             </motion.div>
@@ -171,9 +224,19 @@ export function MembershipForm() {
         </AnimatePresence>
       </div>
 
-      {/* Submit */}
-      <Button type="submit" className="w-full">
-        join the membership
+      <Button
+        disabled={!isDirty || isSubmitting}
+        type="submit"
+        className="w-full"
+      >
+        {" "}
+        {isSubmitting ? (
+          <>
+            Confirming your Membership <Loader className="animate-spin" />
+          </>
+        ) : (
+          "Join Membership"
+        )}
       </Button>
     </form>
   );
