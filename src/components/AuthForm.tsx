@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Loader, LockKeyhole, UserPlus } from "lucide-react";
+import { Eye, EyeOff, Loader, LockKeyhole, UserPlus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { authSchema } from "@/lib/schema";
@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useAuthStore } from "@/store/auth";
 import { useNavigate } from "react-router-dom";
 import { ToastError, ToastSuccess } from "./toast";
+import { cn } from "@/lib/utils";
 
 type AuthFormValues = z.infer<typeof authSchema>;
 
@@ -23,6 +24,7 @@ export function AuthForm() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const login = useAuthStore((state) => state.login);
   const navigate = useNavigate();
 
@@ -62,17 +64,27 @@ export function AuthForm() {
         )}
       </div>
 
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 relative">
         <Label htmlFor="password">
           Password <span className="text-destructive text-left">*</span>
         </Label>
         <Input
           id="password"
-          type="password"
+          type={showPassword ? "text" : "password"}
           placeholder="Please enter your password"
           {...register("password")}
           className="text-sm"
         />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className={cn(
+            "absolute right-3 top-1/2",
+            errors.password ? "-translate-y-1/2" : "translate-y-0"
+          )}
+        >
+          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+        </button>
         {errors.password && (
           <p className="text-xs text-destructive/70 text-left">
             {errors.password.message}
