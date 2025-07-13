@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { LockKeyhole, UserPlus } from "lucide-react";
 
 export function AuthForm() {
   return (
@@ -31,11 +32,17 @@ export function AuthForm() {
         Log in
       </Button>
       <div className="flex items-center justify-between">
-        <a href="#" className="underline text-muted-foreground/80 text-sm">
-          Find password
+        <a
+          href="#"
+          className="flex items-center gap-1 underline text-muted-foreground/80 text-xs lg:text-sm"
+        >
+          <LockKeyhole className="w-4 h-4 lg:w-4.5 lg:h-4.5" strokeWidth={1.5} /> Find password
         </a>
-        <a href="#" className="text-muted-foreground/90 underline text-sm">
-          Join the membership
+        <a
+          href="/join"
+          className=" flex items-center gap-1 text-muted-foreground/90 underline text-xs lg:text-sm"
+        >
+          Join the membership <UserPlus className="w-4 h-4 lg:w-4.5 lg:h-4.5" strokeWidth={1.5} />
         </a>
       </div>
     </form>
