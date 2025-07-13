@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import MembershipPage from "./pages/MembershipPage";
 import { Toaster } from "sonner";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   return (
@@ -13,7 +14,7 @@ function App() {
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/join" element={<MembershipPage />} />
-          <Route path="/dashboard" element={<MembershipPage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </div>
     </BrowserRouter>
